@@ -28,6 +28,7 @@ public class PathAgent : MonoBehaviour
                     clickedArea = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     Destroy(clickedArea.GetComponent<SphereCollider>());
                     clickedArea.name = "Clicked";
+                    clickedArea.transform.parent = transform.root;
 
                     MeshRenderer renderer = clickedArea.GetComponent<MeshRenderer>();
                     renderer.material.color = Color.red;
