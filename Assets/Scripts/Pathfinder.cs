@@ -32,7 +32,7 @@ public class Pathfinder : MonoBehaviour
                 //bool hitObstacle = Physics.Raycast(waypoints[i].transform.position, direction, distance);
 
                 //if (!hitObstacle)
-                if (InLineOfSight(waypoints[i].transform.position, waypoints[j].transform.position))
+                if (InLineOfSight(waypoints[i].gameObject, waypoints[j].gameObject))
                 {
                     waypoints[i].neighbors.Add(waypoints[j]);
                     waypoints[j].neighbors.Add(waypoints[i]);
@@ -44,10 +44,44 @@ public class Pathfinder : MonoBehaviour
     public static bool InLineOfSight(Vector3 worldA, Vector3 worldB)
     {
         Vector3 direction = worldB - worldA;
-        float distance = direction.magnitude;
+        float distance = direction.magnitude - 0.2f; // make it a little smaller to not collide with the B object itself
         direction.Normalize();
 
         return !Physics.Raycast(worldA, direction, distance);
+    }
+
+    public static bool InLineOfSight(GameObject objectA, GameObject objectB)
+    {
+        Vector3 direction = objectB.transform.position - objectA.transform.position;
+        float distance = direction.magnitude;
+        direction.Normalize();
+
+        RaycastHit hit;
+        if (Physics.Raycast(objectA.transform.position, direction, out hit, distance))
+        {
+            // if the first object we hit was objectB, it must be in line of sight
+            return hit.collider.gameObject == objectB;
+        }
+
+        // it didn't hit anything, so it must be in line of sight
+        return true;
+    }
+
+    public static bool InLineOfSight(Vector3 worldA, GameObject objectB)
+    {
+        Vector3 direction = objectB.transform.position - worldA;
+        float distance = direction.magnitude;
+        direction.Normalize();
+
+        RaycastHit hit;
+        if (Physics.Raycast(worldA, direction, out hit, distance))
+        {
+            // if the first object we hit was objectB, it must be in line of sight
+            return hit.collider.gameObject == objectB;
+        }
+
+        // it didn't hit anything, so it must be in line of sight
+        return true;
     }
 
     private float DistanceHeuristic(Waypoint pointA, Waypoint pointB)
@@ -64,7 +98,7 @@ public class Pathfinder : MonoBehaviour
 
         for (int i = 0; i < waypoints.Count; i++)
         {
-            if (InLineOfSight(worldPosition, waypoints[i].transform.position))
+            if (InLineOfSight(worldPosition, waypoints[i].gameObject))
             {
                 float distance = Vector3.Distance(worldPosition, waypoints[i].transform.position);
 

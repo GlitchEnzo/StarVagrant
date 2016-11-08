@@ -8,7 +8,7 @@ public class PathAgent : MonoBehaviour
 
     private GameObject clickedArea;
     private Waypoint clickedAreaWaypoint;
-    private List<Waypoint> path;
+    private List<Waypoint> path = new List<Waypoint>();
 
     private int currentWaypointIndex;    
 
@@ -39,20 +39,34 @@ public class PathAgent : MonoBehaviour
                 clickedArea.transform.position = hit.point;
                 clickedArea.transform.Translate(0, 0.5f, 0);
 
-                Vector3 localPoint = hit.collider.gameObject.transform.root.InverseTransformPoint(hit.point);
-                //Debug.LogFormat("Hit {0} at {1}", hit.collider.gameObject.transform.root.name, localPoint);
+                //if (Pathfinder.InLineOfSight(transform.position, hit.point))
+                if (Pathfinder.InLineOfSight(gameObject, clickedArea))
+                {
+                    // the clicked area is in line of sight, so go straight there
+                    //Debug.LogFormat("In line of sight, so going straight there!");
+                    
+                    path.Clear();
+                    path.Add(clickedAreaWaypoint);
+                }
+                else
+                {
+                    // the clicked area is NOT in line of sight, so find a path to it
 
-                Pathfinder pathfinder = hit.collider.gameObject.transform.root.GetComponent<Pathfinder>();
-                //Waypoint endWaypoint = pathfinder.GetClosestWaypoint(localPoint);
-                //Debug.LogFormat("Closest waypoint to clicked area is {0}", endWaypoint.name);
+                    Vector3 localPoint = hit.collider.gameObject.transform.root.InverseTransformPoint(hit.point);
+                    //Debug.LogFormat("Hit {0} at {1}", hit.collider.gameObject.transform.root.name, localPoint);
 
-                //Waypoint startWaypoint = pathfinder.GetClosestWaypoint(transform.localPosition);
-                //Debug.LogFormat("Closest waypoint to Agent is {0}", startWaypoint.name);
+                    Pathfinder pathfinder = hit.collider.gameObject.transform.root.GetComponent<Pathfinder>();
+                    //Waypoint endWaypoint = pathfinder.GetClosestWaypoint(localPoint);
+                    //Debug.LogFormat("Closest waypoint to clicked area is {0}", endWaypoint.name);
 
-                path = pathfinder.GetPath(transform.localPosition, localPoint);
-                //Debug.LogFormat("Path has {0} waypoints", path.Count);
+                    //Waypoint startWaypoint = pathfinder.GetClosestWaypoint(transform.localPosition);
+                    //Debug.LogFormat("Closest waypoint to Agent is {0}", startWaypoint.name);
 
-                path.Add(clickedAreaWaypoint);
+                    path = pathfinder.GetPath(transform.localPosition, localPoint);
+                    //Debug.LogFormat("Path has {0} waypoints", path.Count);
+
+                    path.Add(clickedAreaWaypoint);
+                }
             }
         }
 
@@ -73,7 +87,8 @@ public class PathAgent : MonoBehaviour
         {
             accumulatedTimeToLook = 0;
 
-            if (Pathfinder.InLineOfSight(transform.position, clickedArea.transform.position))
+            //if (Pathfinder.InLineOfSight(transform.position, clickedArea.transform.position))
+            if (Pathfinder.InLineOfSight(gameObject, clickedArea))
             {
                 // move the index to the end to prevent following the path
                 //currentWaypointIndex = path.Count;
